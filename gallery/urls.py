@@ -6,5 +6,8 @@ from . import views
 urlpatterns = [
     #url(r'^ind$/', views.index, name='index')}
     path('', views.index, name='index'),
-    path('add/', views.add_image, name='addImage')
+    path('add/', views.add_image, name='addImage'),
+    path('view', views.view_images, name='view_images'),
+    path('new', views.add_images_view, name='add_images_view')
+
 ]

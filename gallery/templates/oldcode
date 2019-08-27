@@ -1,0 +1,19 @@
+## image_form
+
+{% block content %}
+    <form action="{% url 'addImage' %}" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Adicionar" />
+    </form>
+{% endblock %}
+
+## index
+
+ {% for image in images_list %}
+    {% if image.imageFile == None %}
+        <img src="{{image.url}}" width="300px" height="300px" />
+    {% else %}
+        <img src="/{{image.imageFile}}" width="300px" height="300px" />
+    {% endif %}
+{% endfor %}
