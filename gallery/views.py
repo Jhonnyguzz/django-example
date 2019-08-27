@@ -1,9 +1,13 @@
+import json
+
+from django.contrib.auth.models import User
 from django.urls import reverse
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Image, ImageForm
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
+
+from .models import Image, ImageForm
 
 # Create your views here.
 @csrf_exempt
@@ -40,9 +44,36 @@ def add_image(request):
         return HttpResponse(serializers.serialize("json", [new_image]))
 
 
+@csrf_exempt
+def add_user(request):
+    if request.method == 'POST':
+        json_user = json.loads(request.body)
+        username = json_user['username']
+        first_name = json_user['first_name']
+        last_name = json_user['last_name']
+        password = json_user['password']
+        email = json_user['email']
+
+        user_model = User.objects.create_user(username=username, password=password)
+        user_model.first_name = first_name
+        user_model.last_name = last_name
+        user_model.email = email
+        user_model.save()
+    return HttpResponse(serializers.serialize("json", [user_model]))
+
+
+@csrf_exempt
+def is_user_auth(request):
+    pass
+
+
 def view_images(request):
     return render(request, "gallery/index.html")
 
 
 def add_images_view(request):
     return render(request, "gallery/image_form.html")
+
+
+def add_user_view(request):
+    return render(request, "gallery/register.html")
