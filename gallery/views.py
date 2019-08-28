@@ -1,9 +1,10 @@
 import json
 
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 
@@ -16,6 +17,11 @@ def index(request):
     context = {'images_list':images_list}
     #return render(request, 'gallery/index.html', context)
     #Serialize as json
+    val = request.user.is_authenticated
+    if val:
+        images_list = Image.objects.filter(user=request.user)
+    else:
+        images_list = Image.objects.all()
     return HttpResponse(serializers.serialize("json", images_list))
 
 
@@ -39,6 +45,7 @@ def add_image(request):
             url=request.POST.get('url'),
             description=request.POST.get('description'),
             imageFile=request.FILES['imageFile'],
+            user=request.user
         )
         new_image.save()
         return HttpResponse(serializers.serialize("json", [new_image]))
@@ -63,8 +70,35 @@ def add_user(request):
 
 
 @csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        jsonUser = json.loads(request.body)
+        username = jsonUser['username']
+        password = jsonUser['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request, user)
+            message = "ok"
+        else:
+            message = 'Nombre de usuario o contraseña incorrectos'
+
+    return JsonResponse({"message": message})
+
+
+@csrf_exempt
 def is_user_auth(request):
-    pass
+    if request.user.is_authenticated:
+        message = 'yes'
+    else:
+        message = 'no'
+
+    return JsonResponse({"message": message})
+
+
+@csrf_exempt
+def logout_view(request):
+    logout(request)
+    return JsonResponse({"message":'ok'})
 
 
 def view_images(request):
@@ -77,3 +111,7 @@ def add_images_view(request):
 
 def add_user_view(request):
     return render(request, "gallery/register.html")
+
+
+def login_user(request):
+    return render(request, "gallery/login.html")
